@@ -12,6 +12,23 @@
 #include <stdbool.h>
 #include <math.h>
 
+
+struct process {
+    int PID;
+    int arrival_time;
+    int CPU_time;
+    int IO_frequency;
+    int IO_duration;
+
+};
+
+struct task{
+    struct process* p;
+    struct task* next;
+};
+
+
+
 int main(int argc, char const *argv[])
 {
     /* code */
