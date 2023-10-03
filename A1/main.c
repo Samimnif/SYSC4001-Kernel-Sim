@@ -53,7 +53,7 @@ process *create_process(int PID, int arrival_time, int CPU_time, int IO_frequenc
     new_process->CPU_time = CPU_time;
     new_process->IO_frequency = IO_frequency;
     new_process->IO_duration = IO_duration;
-    return &new_process;
+    return new_process;
 }
 
 node_t *create_node(process *p)
@@ -110,13 +110,55 @@ bool remove_node(node_t *n, node_t *head)
     return false;
 }
 
+void print_list(node_t *head)
+{
+    node_t *current = head;
+    process *p;
+    while (current != NULL)
+    {
+        p = current->p;
+        printf("PID: %d\n", p->PID);
+        printf("Arival Time: %d\n", p->arrival_time);
+        printf("CPU Time: %d\n", p->CPU_time);
+        printf("IO Frequency: %d\n", p->IO_frequency);
+        printf("IO Duration: %d\n", p->IO_duration);
+        printf("-----------------------\n");
+        current = current->next;
+    }
+}
 
-node_t fetch_data(FILE fp){
-    
+node_t *fetch_data(char *filename)
+{
+    int pid, arrival_time, CPU_time, IO_frequency, IO_duration;
+    node_t *data = NULL;
+    FILE *fp;
+    fp = fopen(filename, "r");
+    char lineString[100];
+    fgets(lineString, 100, fp);
+    while (fgets(lineString, 100, fp))
+    {
+        printf("%s", lineString);
+        pid = atoi(strtok(lineString, ","));
+        arrival_time = atoi(strtok(NULL, ","));
+        CPU_time = atoi(strtok(NULL, ","));
+        IO_frequency = atoi(strtok(NULL, ","));
+        IO_duration = atoi(strtok(NULL, ","));
+        process *p = create_process(pid, arrival_time, CPU_time, IO_frequency, IO_duration);
+        node_t *n = create_node(p);
+        data = add_node(n, data);
+    }
+    printf("Checking Data:\n");
+    print_list(data);
+    fclose(fp);
+    return data;
 }
 
 int main(int argc, char const *argv[])
 {
+    //char *filename = argv[1];
+    char filename[] = "test_case_1.csv";
+    node_t* data = fetch_data(filename);
+
     bool exit = false;
     int clock = 0;
 
