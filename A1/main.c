@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <math.h>
 
-enum STATUS_ENUM
+enum P_STATUS
 {
     NEW,
     READY,
@@ -34,6 +34,7 @@ typedef struct Process
     int CPU_time;
     int IO_frequency;
     int IO_duration;
+    enum P_STATUS status;
 } process;
 
 typedef struct node
@@ -53,6 +54,7 @@ process *create_process(int PID, int arrival_time, int CPU_time, int IO_frequenc
     new_process->CPU_time = CPU_time;
     new_process->IO_frequency = IO_frequency;
     new_process->IO_duration = IO_duration;
+    new_process->status = NEW;
     return new_process;
 }
 
@@ -127,6 +129,19 @@ void print_list(node_t *head)
     }
 }
 
+void print_listln(node_t *head)
+{
+    node_t *current = head;
+    process *p;
+    while (current != NULL)
+    {
+        p = current->p;
+        printf("%d --> ", p->PID);
+        current = current->next;
+    }
+    printf("NULL\n");
+}
+
 node_t *fetch_data(char *filename)
 {
     int pid, arrival_time, CPU_time, IO_frequency, IO_duration;
@@ -147,8 +162,9 @@ node_t *fetch_data(char *filename)
         node_t *n = create_node(p);
         data = add_node(n, data);
     }
-    printf("Checking Data:\n");
+    printf("\nChecking Data:\n");
     print_list(data);
+    print_listln(data);
     fclose(fp);
     return data;
 }
@@ -166,5 +182,13 @@ int main(int argc, char const *argv[])
     {
 
     } while (!exit);
+
+    //Freeing the Heap
+    while (data!= NULL){
+        node_t *temp = data;
+        data = data->next;
+        free(temp->p);
+        free(temp);
+    }
     return 0;
 }
