@@ -85,13 +85,12 @@ node_t *add_node(node_t *n, node_t *head)
     return head;
 }
 
-bool remove_node(node_t *n, node_t *head)
+node_t *remove_node(node_t *n, node_t *head)
 {
     if (head == n)
     {
         head = head->next;
         n->next = NULL; // to isolate the node from the list
-        return true;
     }
     else
     {
@@ -103,13 +102,13 @@ bool remove_node(node_t *n, node_t *head)
             {
                 prev->next = current->next;
                 n->next = NULL;
-                return true;
+                return head;
             }
             prev = current;
             current = current->next;
         }
     }
-    return false;
+    return head;
 }
 
 void print_list(node_t *head)
@@ -173,13 +172,14 @@ int main(int argc, char const *argv[])
 {
     //char *filename = argv[1];
     char filename[] = "test_case_1.csv";
-    node_t* data = fetch_data(filename);
+    node_t* data = fetch_data(filename);    
 
     bool exit = false;
     int clock = 0;
 
     do
     {
+        
 
     } while (!exit);
 
