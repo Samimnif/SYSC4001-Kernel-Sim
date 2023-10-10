@@ -170,21 +170,40 @@ node_t *fetch_data(char *filename)
 
 int main(int argc, char const *argv[])
 {
-    //char *filename = argv[1];
+    // char *filename = argv[1];
     char filename[] = "test_case_1.csv";
-    node_t* data = fetch_data(filename);    
+    node_t *data = fetch_data(filename);
+    node_t *newList = NULL, *readyList = NULL, *waitingList = NULL, *terminatedList = NULL, *running = NULL, *listHead;
 
     bool exit = false;
     int clock = 0;
 
     do
     {
-        
+        printf("CLOCK %d", clock);
+        printf("RUNNING: ");
+        printf("NEW List: ");
+        printf("READY List: ");
+        printf("IO List: ");
+        printf("Terminaed List: ");
+        listHead = waitingList;
+        while (listHead != NULL)
+        {
+        }
+        listHead = newList;
+        while (listHead != NULL)
+        {
+        }
+        if (running == NULL)
+        {
+        }
+        clock++;
 
     } while (!exit);
 
-    //Freeing the Heap
-    while (data!= NULL){
+    // Freeing the Heap
+    while (data != NULL)
+    {
         node_t *temp = data;
         data = data->next;
         free(temp->p);
