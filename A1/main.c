@@ -33,7 +33,9 @@ typedef struct Process
     int arrival_time;
     int CPU_time;
     int IO_frequency;
+    int IO_Clock;
     int IO_duration;
+    int IO_left;
     enum P_STATUS status;
 } process;
 
@@ -53,7 +55,9 @@ process *create_process(int PID, int arrival_time, int CPU_time, int IO_frequenc
     new_process->arrival_time = arrival_time;
     new_process->CPU_time = CPU_time;
     new_process->IO_frequency = IO_frequency;
+    new_process->IO_Clock = IO_frequency;
     new_process->IO_duration = IO_duration;
+    new_process->IO_left = IO_duration;
     new_process->status = NEW;
     return new_process;
 }
@@ -182,17 +186,27 @@ int main(int argc, char const *argv[])
     {
         printf("CLOCK %d", clock);
         printf("RUNNING: ");
+        print_listln(running);
         printf("NEW List: ");
+        print_listln(newList);
         printf("READY List: ");
+        print_listln(readyList);
         printf("IO List: ");
+        print_listln(waitingList);
         printf("Terminaed List: ");
+        print_listln(terminatedList);
         listHead = waitingList;
         while (listHead != NULL)
         {
+            if (listHead->p->IO_left == 0)
+            {
+            }
+            listHead = listHead->next;
         }
         listHead = newList;
         while (listHead != NULL)
         {
+            listHead = listHead->next;
         }
         if (running == NULL)
         {
