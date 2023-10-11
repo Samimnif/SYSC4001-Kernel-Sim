@@ -112,6 +112,21 @@ int main() {
         current_time++; // increments the clock by 1 at every cycle
     }
 
+// Write state transitions to the output file
+    for (int i = 0; i < num_transitions; i++) {
+        fprintf(outputFile, "Time %d: Process %d transitioned from state %d to state %d.\n",
+                transitions[i].time, transitions[i].pid, transitions[i].old_state, transitions[i].new_state);
+    }
+
+    fclose(inputFile);
+    fclose(outputFile);
+    free(pcbArray);
+    free(state_lists);
+    free(transitions);
+
+    return 0;
+}
+
 
 
      
