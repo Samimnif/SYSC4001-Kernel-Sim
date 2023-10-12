@@ -11,22 +11,6 @@
 #include <stdbool.h>
 #include <math.h>
 
-enum P_STATUS
-{
-    NEW,
-    READY,
-    RUNNING,
-    WAITING,
-    TERMINATED
-};
-
-static const char *STATUS_STRING[] = {
-    "NEW",
-    "READY",
-    "RUNNING",
-    "WAITING",
-    "TERMINATED"};
-
 typedef struct Process
 {
     int PID;
@@ -36,7 +20,6 @@ typedef struct Process
     int IO_Fclock;
     int IO_duration;
     int IO_Dleft;
-    enum P_STATUS status;
 } process;
 
 typedef struct node
@@ -58,7 +41,6 @@ process *create_process(int PID, int arrival_time, int CPU_time, int IO_frequenc
     new_process->IO_Fclock = IO_frequency;
     new_process->IO_duration = IO_duration;
     new_process->IO_Dleft = IO_duration;
-    new_process->status = NEW;
     return new_process;
 }
 
@@ -206,7 +188,7 @@ void write_process(char outputFile[], int counter, int PID, const char old_state
 int main(int argc, char const *argv[])
 {
     // char *filename = argv[1];
-    char filename[] = "test_case_1.csv";
+    char filename[] = "test_case_3.csv";
     char outputFile[] = "output-";
     printf("\n Output: %s  **\n",outputFile);
 	printf("Input %s  **\n",filename);
@@ -253,8 +235,7 @@ int main(int argc, char const *argv[])
             {
                 tempNext = listHead->next;
                 // Change of STATE here from WAITING to READY
-                write_process(outputFile, clock, listHead->p->PID, STATUS_STRING[listHead->p->status], STATUS_STRING[READY]);
-                listHead->p->status = READY;
+                write_process(outputFile, clock, listHead->p->PID, "WAITING", "READY");
                 waitingList = remove_node(listHead, waitingList);
                 readyList = add_node(listHead, readyList);
                 listHead = tempNext;
@@ -271,9 +252,8 @@ int main(int argc, char const *argv[])
             if (listHead->p->arrival_time == clock)
             {
                 tempNext = listHead->next;
-                // Chnage of STATE here from WAITING to READY
-                write_process(outputFile, clock, listHead->p->PID, STATUS_STRING[listHead->p->status], STATUS_STRING[READY]);
-                listHead->p->status = READY;
+                // Chnage of STATE here from NEW to READY
+                write_process(outputFile, clock, listHead->p->PID, "NEW", "READY");
                 data = remove_node(listHead, data);
                 readyList = add_node(listHead, readyList);
                 listHead = tempNext;
@@ -290,16 +270,14 @@ int main(int argc, char const *argv[])
             if (running->p->CPU_time == 0)
             {
                 // Process ended and changed to TERMINATED
-                write_process(outputFile, clock, running->p->PID, STATUS_STRING[running->p->status], STATUS_STRING[TERMINATED]);
-                running->p->status = TERMINATED;
+                write_process(outputFile, clock, running->p->PID, "RUNNING", "TERMINATED");
                 terminatedList = add_node(running, terminatedList);
                 running = NULL;
             }
             else if (running->p->IO_Fclock == 0)
             {
                 // Process needs IO access, status changed to WAITING
-                write_process(outputFile, clock, running->p->PID, STATUS_STRING[running->p->status], STATUS_STRING[WAITING]);
-                running->p->status = WAITING;
+                write_process(outputFile, clock, running->p->PID, "RUNNING", "WAITING");
                 running->p->IO_Dleft = running->p->IO_duration;
                 waitingList = add_node(running, waitingList);
                 running = NULL;
@@ -311,8 +289,7 @@ int main(int argc, char const *argv[])
             {
                 running = add_node(getFirst_node(&readyList), running);
                 // Process moved to CPU. State changed from READY to RUNNING
-                write_process(outputFile, clock, running->p->PID, STATUS_STRING[running->p->status], STATUS_STRING[RUNNING]);
-                running->p->status = RUNNING;
+                write_process(outputFile, clock, running->p->PID, "READY", "RUNNING");
                 running->p->IO_Fclock = running->p->IO_frequency;
             }
             else
