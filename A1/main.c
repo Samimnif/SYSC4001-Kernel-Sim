@@ -167,22 +167,23 @@ node_t *fetch_data(char *filename)
     return data;
 }
 
-void write_process(char outputFile[], int counter, int PID, const char old_state[], const char new_state[]){
-	FILE *output;
-	output = fopen(outputFile , "a");
-	char counter_char[1000];
-	sprintf(counter_char, "%d", counter);
-	char PID_char[1000];
-	sprintf(PID_char, "%d", PID);
-	fputs(counter_char, output);
-	fputs(",", output);
-	fputs(PID_char, output);
-	fputs(",", output);
-	fputs(old_state, output);
-	fputs(",", output);
-	fputs(new_state, output);
-	fputs("\n", output);
-	fclose(output);
+void write_process(char outputFile[], int counter, int PID, const char old_state[], const char new_state[])
+{
+    FILE *output;
+    output = fopen(outputFile, "a");
+    char counter_char[1000];
+    sprintf(counter_char, "%d", counter);
+    char PID_char[1000];
+    sprintf(PID_char, "%d", PID);
+    fputs(counter_char, output);
+    fputs(",", output);
+    fputs(PID_char, output);
+    fputs(",", output);
+    fputs(old_state, output);
+    fputs(",", output);
+    fputs(new_state, output);
+    fputs("\n", output);
+    fclose(output);
 }
 
 int main(int argc, char const *argv[])
@@ -190,21 +191,21 @@ int main(int argc, char const *argv[])
     // char *filename = argv[1];
     char filename[] = "test_case_3.csv";
     char outputFile[] = "output-";
-    printf("\n Output: %s  **\n",outputFile);
-	printf("Input %s  **\n",filename);
+    printf("\n Output: %s  **\n", outputFile);
+    printf("Input %s  **\n", filename);
     node_t *data = fetch_data(filename);
     strcat(outputFile, filename);
     FILE *output;
-	output = fopen(outputFile , "a");
-	fputs("Time of transition", output);
-	fputs(",", output);
-	fputs("PID", output);
-	fputs(",", output);
-	fputs("Old State", output);
-	fputs(",", output);
-	fputs("New State", output);
-	fputs("\n", output);
-	fclose(output);
+    output = fopen(outputFile, "a");
+    fputs("Time of transition", output);
+    fputs(",", output);
+    fputs("PID", output);
+    fputs(",", output);
+    fputs("Old State", output);
+    fputs(",", output);
+    fputs("New State", output);
+    fputs("\n", output);
+    fclose(output);
 
     node_t *newList = NULL, *readyList = NULL, *waitingList = NULL, *terminatedList = NULL, *running = NULL, *listHead, *tempNext;
     print_listln(data);
@@ -282,6 +283,20 @@ int main(int argc, char const *argv[])
                 waitingList = add_node(running, waitingList);
                 running = NULL;
             }
+            if (running == NULL)
+            {
+                if (readyList != NULL)
+                {
+                    running = add_node(getFirst_node(&readyList), running);
+                    // Process moved to CPU. State changed from READY to RUNNING
+                    write_process(outputFile, clock, running->p->PID, "READY", "RUNNING");
+                    running->p->IO_Fclock = running->p->IO_frequency;
+                }
+                else
+                {
+                    printf("READY QUEUE EMPTY\nCPU STALL\n");
+                }
+            }
         }
         else
         {
@@ -302,7 +317,7 @@ int main(int argc, char const *argv[])
             exit = true;
         }
         clock++;
-        //sleep(1);
+        // sleep(1);
 
     } while (!exit);
 
