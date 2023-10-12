@@ -189,7 +189,7 @@ void write_process(char outputFile[], int counter, int PID, const char old_state
 int main(int argc, char const *argv[])
 {
     // char *filename = argv[1];
-    char filename[] = "test_case_3.csv";
+    char filename[] = "test_case_1.csv";
     char outputFile[] = "output-";
     printf("\n Output: %s  **\n", outputFile);
     printf("Input %s  **\n", filename);
