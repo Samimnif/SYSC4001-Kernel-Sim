@@ -20,6 +20,7 @@ typedef struct Process
     int IO_Fclock;
     int IO_duration;
     int IO_Dleft;
+    int waiting_time;
 } process;
 
 typedef struct node
@@ -41,6 +42,7 @@ process *create_process(int PID, int arrival_time, int CPU_time, int IO_frequenc
     new_process->IO_Fclock = IO_frequency;
     new_process->IO_duration = IO_duration;
     new_process->IO_Dleft = IO_duration;
+    new_process->waiting_time = 0;
     return new_process;
 }
 
@@ -207,7 +209,7 @@ int main(int argc, char const *argv[])
     fputs("\n", output);
     fclose(output);
 
-    node_t *newList = NULL, *readyList = NULL, *waitingList = NULL, *terminatedList = NULL, *running = NULL, *listHead, *tempNext;
+    node_t *readyList = NULL, *waitingList = NULL, *terminatedList = NULL, *running = NULL, *listHead, *tempNext;
     print_listln(data);
 
     bool exit = false;
@@ -228,6 +230,13 @@ int main(int argc, char const *argv[])
         print_listln(terminatedList);
         printf("\n");
         // IO List Check to prepare the READY List
+        listHead = readyList;
+        while (listHead != NULL)
+        {
+            listHead->p->waiting_time++;
+            listHead = listHead->next;
+        }
+
         listHead = waitingList;
         while (listHead != NULL)
         {
@@ -317,9 +326,21 @@ int main(int argc, char const *argv[])
             exit = true;
         }
         clock++;
-        // sleep(1);
 
     } while (!exit);
+
+    printf("TERMINATED\n");
+    float average_t = 0;
+    int process_num = 0;
+    listHead = terminatedList;
+    while (listHead != NULL)
+    {
+        printf("PID:%d      Waiting Time:%d\n", listHead->p->PID, listHead->p->waiting_time);
+        process_num++;
+        average_t += listHead->p->waiting_time;
+        listHead = listHead->next;
+    }
+    printf("Average Waiting Time: %f\n", (average_t/process_num));
 
     // Freeing the Heap
     while (terminatedList != NULL)
