@@ -180,7 +180,7 @@ void print_listln(node_t *head)
  * Output: pointer to the head of newly created linked list
  *
  */
-node_t *fetch_data(char *filename)
+node_t *fetch_data(const char *filename)
 {
     int pid, arrival_time, CPU_time, IO_frequency, IO_duration;
     node_t *data = NULL;
@@ -235,8 +235,8 @@ void write_process(char outputFile[], int counter, int PID, const char old_state
 
 int main(int argc, char const *argv[])
 {
-    // char *filename = argv[1];
-    char filename[] = "test_case_3.csv";
+    const char *filename = argv[1];
+    //char filename[] = "test_case_3.csv";
     char outputFile[] = "output-";
     printf("Input %s  **\n\n", filename);
     node_t *data = fetch_data(filename);
