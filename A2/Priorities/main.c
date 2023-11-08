@@ -21,6 +21,7 @@ typedef struct Process
     int IO_duration;
     int IO_duration_left;
     int waiting_time;
+    int priority;
 } process;
 
 typedef struct node
@@ -47,6 +48,7 @@ process *create_process(int PID, int arrival_time, int CPU_time, int IO_frequenc
     new_process->IO_duration = IO_duration;
     new_process->IO_duration_left = IO_duration;
     new_process->waiting_time = 0;
+    new_process->priority = priority;
     return new_process;
 }
 
@@ -70,17 +72,19 @@ node_t *create_node(process *p)
  */
 node_t *add_node(node_t *n, node_t *head)
 {
-    if (head == NULL)
+    if (head == NULL || n->p->priority < head->p->priority)
     {
+        n->next = head;
         head = n;
     }
     else
     {
         node_t *current = head;
-        while (current->next != NULL)
+        while (current->next != NULL && current->next->p->priority <=n->p->priority)
         {
             current = current->next;
         }
+        n->next = current->next;
         current->next = n;
     }
     return head;
@@ -133,6 +137,36 @@ node_t *getFirst_node(node_t **head)
         return temp;
     }
     return NULL;
+}
+/**
+ * getHighestPriorityNode: Selects and removes the node with the highest priority
+ * from the linked list pointed to by 'head'.
+ *
+ * input: A pointer to a pointer to the head of the linked list.
+ * returns A pointer to the node with the highest priority.
+ */
+node_t *getHighestPriorityNode(node_t **head) {
+    node_t *highestPriorityNode = *head;
+    node_t *previous = NULL;
+    node_t *current = *head;
+
+    while (current != NULL) {
+        if (current->p->priority > highestPriorityNode->p->priority) {
+            highestPriorityNode = current;
+            previous = previous; // Store the previous node
+        }
+        previous = current;
+        current = current->next;
+    }
+
+    if (previous == NULL) {
+        *head = (*head)->next;
+    } else {
+        previous->next = highestPriorityNode->next;
+    }
+
+    highestPriorityNode->next = NULL;
+    return highestPriorityNode;
 }
 
 /** print_list: prints the linke dlist in more detail
@@ -370,7 +404,7 @@ int main(int argc, char const *argv[])
         {
             if (readyList != NULL)
             {
-                running = add_node(getFirst_node(&readyList), running);
+                running = add_node(getHighestPriorityNode(&readyList), running);
                 // Process moved to CPU. State changed from READY to RUNNING
                 write_process(outputFile, clock, running->p->PID, "READY", "RUNNING");
                 running->p->IO_frequency_left = running->p->IO_frequency;
