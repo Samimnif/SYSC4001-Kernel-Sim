@@ -221,9 +221,9 @@ node_t *fetch_data(const char *filename)
     node_t *data = NULL;
     FILE *fp;
     fp = fopen(filename, "r");
-    char lineString[100];
-    fgets(lineString, 100, fp);
-    while (fgets(lineString, 100, fp))
+    char lineString[200];
+    fgets(lineString, 200, fp);
+    while (fgets(lineString, 200, fp))
     {
         printf("%s", lineString);
         pid = atoi(strtok(lineString, ","));
