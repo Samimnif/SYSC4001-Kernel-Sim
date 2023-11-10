@@ -49,7 +49,7 @@ process *create_process(int PID, int arrival_time, int CPU_time, int IO_frequenc
     new_process->IO_duration = IO_duration;
     new_process->IO_duration_left = IO_duration;
     new_process->waiting_time = 0;
-    new_process->end_time = NULL;
+    new_process->end_time = 0;
     return new_process;
 }
 
@@ -401,7 +401,7 @@ int main(int argc, char const *argv[])
     }
 
     printf("\n===================\nTERMINATED\n\nSTATS:\n");
-    float average_t = 0;
+    float average_waiting = 0, average_turnaround = 0;
     int process_num = 0;
     listHead = terminatedList;
     //Going through all Process in the TERMINATED list and collect info like waiting time and number of process
@@ -409,11 +409,13 @@ int main(int argc, char const *argv[])
     {
         printf("PID:%d      Waiting Time:%d     Turnaround:%d\n", listHead->p->PID, listHead->p->waiting_time, listHead->p->end_time - listHead->p->arrival_time);
         process_num++;
-        average_t += listHead->p->waiting_time;
+        average_waiting += listHead->p->waiting_time;
+        average_turnaround += listHead->p->end_time - listHead->p->arrival_time;
         listHead = listHead->next;
     }
     //Calculating Avergae Waiting Time and Printing it to thr Terminal
-    printf("Average Waiting Time: %f\n", (average_t / process_num));
+    printf("Average Waiting Time: %f\n", (average_waiting / process_num));
+    printf("Average Turnaround Time: %f\n", (average_turnaround / process_num));
 
     // Freeing the Heap
     while (terminatedList != NULL)
