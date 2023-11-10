@@ -33,11 +33,11 @@ typedef struct node
 /** create_process: takes in process details and create a preocess struct by adding it to the heap
  * by using malloc
  * Input Parameters:
- * PID, arrival_time, CPU_time, IO_frequency, IO_duration
+ * PID, arrival_time, CPU_time, IO_frequency, IO_duration, priority
  *
  * Output: a pointer to process
  */
-process *create_process(int PID, int arrival_time, int CPU_time, int IO_frequency, int IO_duration)
+process *create_process(int PID, int arrival_time, int CPU_time, int IO_frequency, int IO_duration, int priority)
 {
     process *new_process = (process *)malloc(sizeof(process));
     new_process->PID = PID;
@@ -186,6 +186,7 @@ void print_list(node_t *head)
         printf("CPU Time: %d\n", p->CPU_time);
         printf("IO Frequency: %d\n", p->IO_frequency);
         printf("IO Duration: %d\n", p->IO_duration);
+        printf("Priority: %d\n", p->priority);
         printf("-----------------------\n");
         current = current->next;
     }
@@ -216,7 +217,7 @@ void print_listln(node_t *head)
  */
 node_t *fetch_data(const char *filename)
 {
-    int pid, arrival_time, CPU_time, IO_frequency, IO_duration;
+    int pid, arrival_time, CPU_time, IO_frequency, IO_duration, priority;
     node_t *data = NULL;
     FILE *fp;
     fp = fopen(filename, "r");
@@ -230,7 +231,8 @@ node_t *fetch_data(const char *filename)
         CPU_time = atoi(strtok(NULL, ","));
         IO_frequency = atoi(strtok(NULL, ","));
         IO_duration = atoi(strtok(NULL, ","));
-        process *p = create_process(pid, arrival_time, CPU_time, IO_frequency, IO_duration);
+        priority = atoi(strtok(NULL, ","));
+        process *p = create_process(pid, arrival_time, CPU_time, IO_frequency, IO_duration, priority);
         node_t *n = create_node(p);
         data = add_node(n, data);
     }
