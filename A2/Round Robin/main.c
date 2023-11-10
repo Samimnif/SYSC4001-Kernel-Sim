@@ -21,7 +21,8 @@ typedef struct Process
     int IO_frequency_left;
     int IO_duration;
     int IO_duration_left;
-    int waiting_time;
+    int waiting_time; // for stats purposes only
+    int end_time; // for stats purposes only
 } process;
 
 typedef struct node
@@ -48,6 +49,7 @@ process *create_process(int PID, int arrival_time, int CPU_time, int IO_frequenc
     new_process->IO_duration = IO_duration;
     new_process->IO_duration_left = IO_duration;
     new_process->waiting_time = 0;
+    new_process->end_time = NULL;
     return new_process;
 }
 
@@ -340,6 +342,7 @@ int main(int argc, char const *argv[])
             {
                 // Process ended and changed to TERMINATED
                 write_process(outputFile, clock, running->p->PID, "RUNNING", "TERMINATED");
+                running->p->end_time = clock;
                 terminatedList = add_node(running, terminatedList);
                 running = NULL;
             }
@@ -404,7 +407,7 @@ int main(int argc, char const *argv[])
     //Going through all Process in the TERMINATED list and collect info like waiting time and number of process
     while (listHead != NULL)
     {
-        printf("PID:%d      Waiting Time:%d\n", listHead->p->PID, listHead->p->waiting_time);
+        printf("PID:%d      Waiting Time:%d     Turnaround:%d\n", listHead->p->PID, listHead->p->waiting_time, listHead->p->end_time - listHead->p->arrival_time);
         process_num++;
         average_t += listHead->p->waiting_time;
         listHead = listHead->next;
