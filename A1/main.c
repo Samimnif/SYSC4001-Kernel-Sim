@@ -2,6 +2,7 @@
  * SYSC 4001 - Assignment 1
  *
  * @author Sami Mnif - 101199669
+ * @author Javeria Sohail - 101197163
  *
  */
 
