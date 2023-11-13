@@ -25,6 +25,7 @@ typedef struct Process
     int memory_needed;
     int waiting_time; // for stats purposes only
     int end_time; // for stats purposes only
+    int partition_size; //Main Memory Partition Used
 } process;
 
 typedef struct Memory
@@ -73,7 +74,7 @@ memory_part *create_memory_part(process *p, int num, int size, int hole)
     new_mempart->p = p;
     new_mempart->position_num = num;
     new_mempart->size = size;
-    new_mempart->hole = 0;
+    new_mempart->hole = size;
     return new_mempart;
 }
 
@@ -179,10 +180,11 @@ bool allocate_memory(process *p, node_t *head)
     node_t *current = head;
     while (current != NULL)
     {
-        if (current->mem_part->size > p->memory_needed && current->mem_part->p == NULL)
+        if (current->mem_part->size >= p->memory_needed && current->mem_part->p == NULL)
         {
             current->mem_part->p = p;
             current->mem_part->hole = current->mem_part->size - p->memory_needed;
+            p->partition_size = current->mem_part->size;
             return true;
         }
         current = current->next;
@@ -201,12 +203,72 @@ bool deallocate_memory(process *p, node_t *head)
         if (current->mem_part->p == p)
         {
             current->mem_part->p = NULL;
-            current->mem_part->hole = 0;
+            current->mem_part->hole = current->mem_part->size;
             return true;
         }
         current = current->next;
     }
     return false;
+}
+
+int total_mem_used(node_t *head)
+{
+    node_t *current = head;
+    int sum = 0;
+    while (current != NULL)
+    {
+        if (current->mem_part->p != NULL)
+        {
+            sum += current->mem_part->p->memory_needed;
+        }
+        current = current->next;
+    }
+    return sum;
+}
+
+int partitions_free (node_t *head)
+{
+    node_t *current = head;
+    int sum = 0;
+    while (current != NULL)
+    {
+        if (current->mem_part->p == NULL)
+        {
+            sum++;
+        }
+        current = current->next;
+    }
+    return sum;
+}
+
+int total_mem_free (node_t *head)
+{
+    node_t *current = head;
+    int sum = 0;
+    while (current != NULL)
+    {
+        if (current->mem_part->p != NULL)
+        {
+            sum += current->mem_part->hole;
+        }
+        current = current->next;
+    }
+    return sum;
+}
+
+int total_usable_mem (node_t *head)
+{
+    node_t *current = head;
+    int sum = 0;
+    while (current != NULL)
+    {
+        if (current->mem_part->p == NULL)
+        {
+            sum += current->mem_part->size;
+        }
+        current = current->next;
+    }
+    return sum;
 }
 
 /** print_list: prints the linke dlist in more detail
@@ -360,18 +422,53 @@ void write_process(char outputFile[], int counter, int PID, const char old_state
     fclose(output);
 }
 
+/**
+ * 
+*/
+void write_memory(char outputFile[], int counter, int PID, int memory_used, int partitions_used, int free_memory, int usable_memory)
+{
+    FILE *output;
+    output = fopen(outputFile, "a");
+    char counter_char[1000], memory_used_char[1000], partitions_used_char[1000], free_memory_char[1000], usable_memory_char[1000];
+    sprintf(counter_char, "%d", counter);
+    char PID_char[1000];
+    sprintf(PID_char, "%d", PID);
+    fputs(counter_char, output);
+    fputs(",", output);
+    fputs(PID_char, output);
+    fputs(",", output);
+    sprintf(memory_used_char, "%d", memory_used);
+    fputs(memory_used_char, output);
+    fputs(",", output);
+    sprintf(partitions_used_char, "%d", partitions_used);
+    fputs(partitions_used_char, output);
+    fputs(",", output);
+    sprintf(free_memory_char, "%d", free_memory);
+    fputs(free_memory_char, output);
+    fputs(",", output);
+    sprintf(usable_memory_char, "%d", usable_memory);
+    fputs(usable_memory_char, output);
+    fputs("\n", output);
+    fclose(output);
+}
+
 int main(int argc, char const *argv[])
 {
     const char *filename = argv[1];
     const char *settingsFile = argv[2];
     // char filename[] = "test_case_3.csv";
-    char outputFile[] = "output-";
+    
+    char outputFile[100];
+    char outputMemeFile[100];
     printf("Input %s  **\n\n", filename);
     node_t *data = fetch_data(filename);
     node_t *main_memory = fetch_memory_settings(settingsFile);
 
     // Creating an output filename depending on input filename
+    strcpy(outputFile, "output-");
+    strcpy(outputMemeFile, "outputMeme-");
     strcat(outputFile, filename);
+    strcat(outputMemeFile, filename);
     // Accessing the ouput file and writing table headers
     FILE *output;
     output = fopen(outputFile, "a");
@@ -382,6 +479,21 @@ int main(int argc, char const *argv[])
     fputs("Old State", output);
     fputs(",", output);
     fputs("New State", output);
+    fputs("\n", output);
+    fclose(output);
+
+    output = fopen(outputMemeFile, "a");
+    fputs("Time of transition", output);
+    fputs(",", output);
+    fputs("PID", output);
+    fputs(",", output);
+    fputs("Memory Used", output);
+    fputs(",", output);
+    fputs("Partition Free", output);
+    fputs(",", output);
+    fputs("Total Free Memory", output);
+    fputs(",", output);
+    fputs("Total Usable Memory", output);
     fputs("\n", output);
     fclose(output);
 
@@ -452,6 +564,7 @@ int main(int argc, char const *argv[])
                 if (allocate_memory(listHead->proc, main_memory))
                 {
                     write_process(outputFile, clock, listHead->proc->PID, "NEW", "READY");
+                    write_memory(outputMemeFile, clock, listHead->proc->PID, total_mem_used(main_memory), partitions_free(main_memory), total_mem_free(main_memory), total_usable_mem(main_memory));
                     data = remove_node(listHead, data);
                     readyList = add_node(listHead, readyList);
                     listHead = tempNext;

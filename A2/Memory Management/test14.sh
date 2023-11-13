@@ -1,1 +1,1 @@
-./main test_case_9.csv test_memory_2.csv
+./main test_case_14.csv test_memory_2.csv
