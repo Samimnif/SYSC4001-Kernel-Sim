@@ -1,7 +1,9 @@
 /**
- * SYSC 4001 - Assignment 1
+ * SYSC 4001 - Assignment 2
+ * FCFS Algorithm - main.c
  *
  * @author Sami Mnif - 101199669
+ * @author Javeria Sohail - 101197163
  *
  */
 
@@ -20,7 +22,8 @@ typedef struct Process
     int IO_frequency_left;
     int IO_duration;
     int IO_duration_left;
-    int waiting_time;
+    int waiting_time; // for stats purposes only
+    int end_time; // for stats purposes only
 } process;
 
 typedef struct node
@@ -339,6 +342,7 @@ int main(int argc, char const *argv[])
             {
                 // Process ended and changed to TERMINATED
                 write_process(outputFile, clock, running->p->PID, "RUNNING", "TERMINATED");
+                running->p->end_time = clock;
                 terminatedList = add_node(running, terminatedList);
                 running = NULL;
             }
@@ -390,19 +394,25 @@ int main(int argc, char const *argv[])
     }
 
     printf("\n===================\nTERMINATED\n\nSTATS:\n");
-    float average_t = 0;
+    float average_waiting = 0, average_turnaround = 0, throuput_last = 0;
     int process_num = 0;
     listHead = terminatedList;
     //Going through all Process in the TERMINATED list and collect info like waiting time and number of process
     while (listHead != NULL)
     {
-        printf("PID:%d      Waiting Time:%d\n", listHead->p->PID, listHead->p->waiting_time);
+        printf("PID:%d      Waiting Time:%d     Turnaround:%d\n", listHead->p->PID, listHead->p->waiting_time, listHead->p->end_time - listHead->p->arrival_time);
         process_num++;
-        average_t += listHead->p->waiting_time;
+        average_waiting += listHead->p->waiting_time;
+        average_turnaround += listHead->p->end_time - listHead->p->arrival_time;
+        if (listHead->next == NULL){
+            throuput_last = listHead->p->end_time;
+        }
         listHead = listHead->next;
     }
     //Calculating Avergae Waiting Time and Printing it to thr Terminal
-    printf("Average Waiting Time: %f\n", (average_t / process_num));
+    printf("Average Waiting Time: %f\n", (average_waiting / process_num));
+    printf("Average Turnaround Time: %f\n", (average_turnaround / process_num));
+    printf("Average Throughput: %f\n", (float)(process_num / throuput_last));
 
     // Freeing the Heap
     while (terminatedList != NULL)
