@@ -54,3 +54,48 @@ Average Waiting Time: 172.375000
 Average Turnaround Time: 3491.125000
 Average Throughput: 0.000310
 ```
+* Test Case 5 **(CPU BOUND)**
+```
+STATS:
+PID:1003      Waiting Time:28     Turnaround:38
+PID:1004      Waiting Time:169     Turnaround:219
+PID:1001      Waiting Time:366     Turnaround:466
+PID:1005      Waiting Time:388     Turnaround:488
+PID:1006      Waiting Time:389     Turnaround:489
+PID:1007      Waiting Time:390     Turnaround:490
+PID:1002      Waiting Time:459     Turnaround:709
+PID:1008      Waiting Time:0     Turnaround:100
+Average Waiting Time: 273.625000
+Average Turnaround Time: 374.875000
+Average Throughput: 0.007273
+```
+* Test Case 6 **(I/O Bound )**
+```
+STATS:
+PID:1003      Waiting Time:28     Turnaround:38
+PID:1004      Waiting Time:169     Turnaround:219
+PID:1001      Waiting Time:366     Turnaround:466
+PID:1005      Waiting Time:388     Turnaround:488
+PID:1006      Waiting Time:389     Turnaround:489
+PID:1007      Waiting Time:390     Turnaround:490
+PID:1002      Waiting Time:459     Turnaround:709
+PID:1008      Waiting Time:0     Turnaround:100
+Average Waiting Time: 273.625000
+Average Turnaround Time: 374.875000
+Average Throughput: 0.007273
+```
+* Test Case 7 **(Balanced)**
+```
+STATS:
+PID:1003      Waiting Time:28     Turnaround:38
+PID:1004      Waiting Time:169     Turnaround:219
+PID:1001      Waiting Time:366     Turnaround:466
+PID:1005      Waiting Time:388     Turnaround:488
+PID:1006      Waiting Time:389     Turnaround:489
+PID:1007      Waiting Time:390     Turnaround:490
+PID:1002      Waiting Time:459     Turnaround:709
+PID:1008      Waiting Time:0     Turnaround:100
+Average Waiting Time: 273.625000
+Average Turnaround Time: 374.875000
+Average Throughput: 0.007273
+```

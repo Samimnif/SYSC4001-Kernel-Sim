@@ -54,21 +54,48 @@ Average Waiting Time: 60.750000
 Average Turnaround Time: 3776.125000
 Average Throughput: 0.000309
 ```
-
-## Usage
-```bash
-./test1.sh
-./test2.sh
-./test3.sh
+* Test Case 5 **(CPU BOUND)**
 ```
-
-In case you get a permission error for the bash files, please change
-file permissions
-```bash
-chmod 755 {filename}
+STATS:
+PID:1003      Waiting Time:11     Turnaround:61
+PID:1004      Waiting Time:58     Turnaround:351
+PID:1006      Waiting Time:43     Turnaround:623
+PID:1007      Waiting Time:52     Turnaround:632
+PID:1005      Waiting Time:104     Turnaround:804
+PID:1001      Waiting Time:56     Turnaround:1106
+PID:1002      Waiting Time:115     Turnaround:1198
+PID:1008      Waiting Time:19     Turnaround:404
+Average Waiting Time: 57.250000
+Average Turnaround Time: 647.375000
+Average Throughput: 0.005698
 ```
-
-Once the script finished running, you will notice an output file has bee created in this format
+* Test Case 6 **(I/O Bound )**
 ```
-output-{input filename}
+STATS:
+PID:1003      Waiting Time:43     Turnaround:53
+PID:1004      Waiting Time:297     Turnaround:452
+PID:1006      Waiting Time:135     Turnaround:375
+PID:1007      Waiting Time:230     Turnaround:450
+PID:1005      Waiting Time:215     Turnaround:515
+PID:1002      Waiting Time:289     Turnaround:739
+PID:1001      Waiting Time:175     Turnaround:755
+PID:1008      Waiting Time:0     Turnaround:280
+Average Waiting Time: 173.000000
+Average Turnaround Time: 452.375000
+Average Throughput: 0.006250
+```
+* Test Case 7 **(Balanced)**
+```
+STATS:
+PID:1003      Waiting Time:33     Turnaround:43
+PID:1004      Waiting Time:277     Turnaround:427
+PID:1006      Waiting Time:153     Turnaround:373
+PID:1007      Waiting Time:248     Turnaround:460
+PID:1001      Waiting Time:230     Turnaround:570
+PID:1005      Waiting Time:225     Turnaround:500
+PID:1002      Waiting Time:329     Turnaround:819
+PID:1008      Waiting Time:0     Turnaround:226
+Average Waiting Time: 186.875000
+Average Turnaround Time: 427.250000
+Average Throughput: 0.006525
 ```
