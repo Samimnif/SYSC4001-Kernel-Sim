@@ -2,6 +2,30 @@
 ## Details
 For this assignement we created a FCFS Kernel Simulator. It reads data from csv file and ouputs a file with the states changes details for each process. The terminal will also print more detailed information of each process for each clock cycle. We also included a waiting time stats at the end of the program.
 ### Results
+* PART 1 C
+```
+STATS:
+PID:1001      Waiting Time:0     Turnaround:18
+PID:1002      Waiting Time:15     Turnaround:22
+PID:1003      Waiting Time:17     Turnaround:29
+PID:1004      Waiting Time:26     Turnaround:36
+PID:1005      Waiting Time:34     Turnaround:43
+Average Waiting Time: 18.400000
+Average Turnaround Time: 29.600000
+Average Throughput: 0.089286
+```
+* PART 1 D
+```
+STATS:
+PID:1002      Waiting Time:9     Turnaround:22
+PID:1005      Waiting Time:21     Turnaround:38
+PID:1004      Waiting Time:23     Turnaround:42
+PID:1003      Waiting Time:24     Turnaround:47
+PID:1001      Waiting Time:23     Turnaround:58
+Average Waiting Time: 20.000000
+Average Turnaround Time: 41.400002
+Average Throughput: 0.086207
+```
 * Test Case 1
 ```text
 STATS:
