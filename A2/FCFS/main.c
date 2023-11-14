@@ -398,6 +398,7 @@ int main(int argc, char const *argv[])
     int process_num = 0;
     listHead = terminatedList;
     //Going through all Process in the TERMINATED list and collect info like waiting time and number of process
+    //and other stats like turnaround and throuput
     while (listHead != NULL)
     {
         printf("PID:%d      Waiting Time:%d     Turnaround:%d\n", listHead->p->PID, listHead->p->waiting_time, listHead->p->end_time - listHead->p->arrival_time);

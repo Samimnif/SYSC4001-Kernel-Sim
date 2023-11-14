@@ -1,5 +1,7 @@
 /**
- * SYSC 4001 - Assignment 1
+ * SYSC 4001 - Assignment 2
+ * Round Robin algorithm with 100 ms timeout
+ * --> Each Clock cycle in our While loop is considered a 100 ms
  *
  * @author Sami Mnif - 101199669
  * @author Javeria Sohail - 101197163
@@ -355,7 +357,8 @@ int main(int argc, char const *argv[])
                 running = NULL;
             }
             else{
-                //In this part, if the CPU is already running and none of the above is met, then we terminate and move in READY list
+                // In this part, if the CPU is already running and none of the above is met, then we terminate and move in READY list
+                // For RR purposes
                 // Process met the Round Robin timeout
                 write_process(outputFile, clock, running->p->PID, "RUNNING", "READY");
                 readyList = add_node(running, readyList);

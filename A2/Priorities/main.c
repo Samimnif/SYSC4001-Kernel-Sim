@@ -1,7 +1,10 @@
 /**
- * SYSC 4001 - Assignment 1
+ * SYSC 4001 - Assignment 2
+ * Priorities (no preemption) scheduler
+ * PCB is modified to have priotrities numbered
  *
  * @author Sami Mnif - 101199669
+ * @author Javeria Sohail - 101197163
  *
  */
 
@@ -141,7 +144,7 @@ node_t *getFirst_node(node_t **head)
     return NULL;
 }
 /**
- * getHighestPriorityNode: Selects and removes the node with the highest priority
+ * getHighestPriorityNode: Selects the node with the highest priority
  * from the linked list pointed to by 'head'.
  *
  * input: A pointer to a pointer to the head of the linked list.
@@ -155,19 +158,11 @@ node_t *getHighestPriorityNode(node_t **head) {
     while (current != NULL) {
         if (current->p->priority > highestPriorityNode->p->priority) {
             highestPriorityNode = current;
-            //previous = previous; // Store the previous node
         }
-        //previous = current;
+        
         current = current->next;
     }
-    /*
-    if (previous == NULL) {
-        *head = (*head)->next;
-    } else {
-        previous->next = highestPriorityNode->next;
-    }
-    highestPriorityNode->next = NULL;
-    */
+
     return highestPriorityNode;
 }
 
@@ -377,7 +372,7 @@ int main(int argc, char const *argv[])
             {
                 // Process ended and changed to TERMINATED
                 write_process(outputFile, clock, running->p->PID, "RUNNING", "TERMINATED");
-                running->p->end_time = clock;
+                running->p->end_time = clock; //save the end time of process for stats
                 terminatedList = add_node(running, terminatedList);
                 running = NULL;
             }
@@ -394,7 +389,9 @@ int main(int argc, char const *argv[])
             {
                 if (readyList != NULL)
                 {
+                    // First we get the highest priority process in the READY queue
                     highestPriority = getHighestPriorityNode(&readyList);
+                    // We then remove the high priority process from READY list and add it to RUNNING
                     readyList = remove_node(highestPriority, readyList);
                     running = add_node(highestPriority, running);
                     // Process moved to CPU. State changed from READY to RUNNING
@@ -411,7 +408,9 @@ int main(int argc, char const *argv[])
         {
             if (readyList != NULL)
             {
+                // First we get the highest priority process in the READY queue
                 highestPriority = getHighestPriorityNode(&readyList);
+                // We then remove the high priority process from READY list and add it to RUNNING
                 readyList = remove_node(highestPriority, readyList);
                 running = add_node(highestPriority, running);
                 //running = add_node(getHighestPriorityNode(&readyList), running);

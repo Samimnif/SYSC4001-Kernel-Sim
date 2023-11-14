@@ -78,6 +78,8 @@ Average Waiting Time: 60.750000
 Average Turnaround Time: 3776.125000
 Average Throughput: 0.000309
 ```
+<hr>
+
 * Test Case 5 **(CPU BOUND)**
 ```
 STATS:

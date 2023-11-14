@@ -1,6 +1,7 @@
 /**
  * SYSC 4001 - Assignment 2
- * Memory Management
+ * Memory Management - Using FCFS for CPU scheduling and 
+ * First Fit for Memory Management
  *
  * @author Sami Mnif - 101199669
  * @author Javeria Sohail - 101197163
@@ -36,6 +37,7 @@ typedef struct Memory
     int hole;
 } memory_part;
 
+//edited node to make it possible used either for process list or for memory list
 typedef struct node
 {
     process *proc;
@@ -65,8 +67,10 @@ process *create_process(int PID, int arrival_time, int CPU_time, int IO_frequenc
     return new_process;
 }
 
-/** create_memory_part: takes in memory partition info and creates a new partition
+/** create_memory_part: takes in memory partition info and creates a new partition (pointer to new struct)
+ * Input: p (process), num(partition number/position), size (partition size), hole (unused memory in that partition)
  *
+ * Output: a pointer to a newly created memory_part struct
  */
 memory_part *create_memory_part(process *p, int num, int size, int hole)
 {
@@ -79,6 +83,8 @@ memory_part *create_memory_part(process *p, int num, int size, int hole)
 }
 
 /** create_node: creates a node (in the heap) to be used in a linked list. It takes a process and has a pointer to the next node.
+ * --New: This function can either create a process node or a memory partition (to make it more applicable for both cases)
+ * 
  * Input Parameters: p (process)
  * Output: a pointer to the node
  */
@@ -172,7 +178,13 @@ node_t *getFirst_node(node_t **head)
     return NULL;
 }
 
-/**
+/** allocate_memory: takes in process and the head of the main memory linked list and tries to 
+ * allocate a partition for the process. We are using First Fit algorithm and we are checking for the size of the memory
+ * partition and for the process's memory requirement. We also recalculate the hole left by the process in the assigned partition.
+ * 
+ * Input: p (process), head (node_t head of main memory linked list)
+ * 
+ * Output: bool: true if it was successful, false otherwise
  *
  */
 bool allocate_memory(process *p, node_t *head)
@@ -192,8 +204,11 @@ bool allocate_memory(process *p, node_t *head)
     return false;
 }
 
-/**
- *
+/** deallocate_memory: deallocates the memory of the specified process. We check through the main memory linked list and try find 
+ * the process specified. If found, we set partition's process to NULL and reset the Hole to its partition's size.
+ * 
+ * Input: p (process), head (Head of the main memory linked list) 
+ * Output: bool: true if it found it and dealocated it successfully, false otherwise
  */
 bool deallocate_memory(process *p, node_t *head)
 {
@@ -211,6 +226,12 @@ bool deallocate_memory(process *p, node_t *head)
     return false;
 }
 
+/** total_mem_used: calculate the total memory currently used by combining all allocated process's Needed Memory.
+ * This gives us the "Total Memory Used".
+ * 
+ * Input: head (Head of the main memory linked list)
+ * Output: int (the sum of used memory)
+*/
 int total_mem_used(node_t *head)
 {
     node_t *current = head;
@@ -226,6 +247,12 @@ int total_mem_used(node_t *head)
     return sum;
 }
 
+/** partitions_free: count the number of unused partitions in the memory. This checks if the
+ * memory partition doesn't have an allocated process (ehich means that partition is FREE)
+ * 
+ * Input: head (Head of the main memory linked list)
+ * Output: int (The total number of free partitions)
+*/
 int partitions_free (node_t *head)
 {
     node_t *current = head;
@@ -241,6 +268,12 @@ int partitions_free (node_t *head)
     return sum;
 }
 
+/** total_mem_free: calculates the total free memory. This is done by adding all holes of each partition in the main memory.
+ * A hole is how much left unused in each partition.
+ * 
+ * Input: head (Head of the main memory linked list)
+ * Output: int (The total of free memory in all partitions)
+*/
 int total_mem_free (node_t *head)
 {
     node_t *current = head;
@@ -256,6 +289,12 @@ int total_mem_free (node_t *head)
     return sum;
 }
 
+/** total_usable_mem: calculates the total of unused and usable memory space, which mean only partitions that doesn't have a process in it,
+ * since fragments don't count (per Assignment instructions)
+ * 
+ * Input: head (Head of the main memory linked list)
+ * Output: int (the total usable memory in main memory)
+*/
 int total_usable_mem (node_t *head)
 {
     node_t *current = head;
@@ -311,8 +350,10 @@ void print_listln(node_t *head)
     printf("NULL\n");
 }
 
-/**
- *
+/** print_memory: prints the Main Memory (linked list) in for of Text for Debug and disaply
+ * 
+ * Input: head (Head of the main memory linked list)
+ * Output: void (prints to terminal)
  */
 void print_memory(node_t *head)
 {
@@ -370,7 +411,10 @@ node_t *fetch_data(const char *filename)
     return data;
 }
 
-/**
+/** fetch_memory_settings: reads the file provided and extracts the details and saves it in to a linked
+ * list that is made of nodes that contains the memory partition structs (memory_part)
+ * Input: filename (the name of the file conataining data)
+ * Output: pointer to the head of newly created linked list
  *
  */
 node_t *fetch_memory_settings(const char *filename)
@@ -422,7 +466,12 @@ void write_process(char outputFile[], int counter, int PID, const char old_state
     fclose(output);
 }
 
-/**
+/** write_memory: takes details and appends it to an output file.
+ * Inputs:
+ * outputFile[](the ouptut file name), counter(the current clock), PID(the process PID),
+ * int memory_used (total memory used), int partitions_used (number of used partitions), int free_memory (total free memory), 
+ * int usable_memory (total usable memory)
+ * Output: void (it writes to a output file)
  * 
 */
 void write_memory(char outputFile[], int counter, int PID, int memory_used, int partitions_used, int free_memory, int usable_memory)
@@ -469,6 +518,7 @@ int main(int argc, char const *argv[])
     strcpy(outputMemeFile, "outputMeme-");
     strcat(outputFile, filename);
     strcat(outputMemeFile, filename);
+
     // Accessing the ouput file and writing table headers
     FILE *output;
     output = fopen(outputFile, "a");
@@ -560,10 +610,13 @@ int main(int argc, char const *argv[])
             if (listHead->proc->arrival_time <= clock)
             {
                 tempNext = listHead->next;
-                // Change of STATE here from NEW to READY
-                if (allocate_memory(listHead->proc, main_memory))
+
+                //Before the Process starts, we try to allocate it to memory and see the response from memory
+                if (allocate_memory(listHead->proc, main_memory)) 
                 {
+                    // Change of STATE here from NEW to READY
                     write_process(outputFile, clock, listHead->proc->PID, "NEW", "READY");
+                    // Also write the data as requested per Assignment
                     write_memory(outputMemeFile, clock, listHead->proc->PID, total_mem_used(main_memory), partitions_free(main_memory), total_mem_free(main_memory), total_usable_mem(main_memory));
                     data = remove_node(listHead, data);
                     readyList = add_node(listHead, readyList);
@@ -590,9 +643,10 @@ int main(int argc, char const *argv[])
             if (running->proc->CPU_time == 0)
             {
                 // Process ended and changed to TERMINATED
+                // deallocates the memory and remove it from memory
                 deallocate_memory(running->proc, main_memory);
                 write_process(outputFile, clock, running->proc->PID, "RUNNING", "TERMINATED");
-                running->proc->end_time = clock;
+                running->proc->end_time = clock; //save the end time of the process
                 terminatedList = add_node(running, terminatedList);
                 running = NULL;
             }
