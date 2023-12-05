@@ -13,7 +13,7 @@ struct msg_buffer {
 };
 
 int main() {
-    key_t key = ftok(".", 'M');
+    key_t key = ftok("msg_key.txt", 'M');
     int msg_id = msgget(key, IPC_CREAT | 0666);
     if (msg_id == -1) {
         perror("msgget");
