@@ -8,7 +8,7 @@
 #include <sys/sem.h>
 #include <signal.h>
 
-#define SHM_SIZE  sizeof(char)
+#define SHM_SIZE sizeof(char)
 
 // Semaphore operations
 struct sembuf acquire = {0, -1, SEM_UNDO};
@@ -22,7 +22,7 @@ void handle_sigchld(int signum) {
     child_exit_flag = 1;
 }
 
-void process1(char *shared_variable) {
+void process1(char *shared_variable, int shm_id) {
     printf("I am Process 1\n");
 
     pid_t pid = fork();
@@ -82,7 +82,7 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    process1(shared_variable);
+    process1(shared_variable, shm_id);
 
     return 0;
 }
