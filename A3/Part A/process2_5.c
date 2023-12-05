@@ -32,19 +32,29 @@ void process2(char *shared_variable) {
     }
 
     while (1) {
-        printf("Press '2' to display the message again or 'x' to exit: ");
-
-        char input;
-        scanf(" %c", &input);
-
         // Acquire the semaphore before accessing shared memory
         if (semop(sem_id, &acquire, 1) == -1) {
             perror("semop");
             exit(EXIT_FAILURE);
         }
 
-        // Store the input value in the shared variable
-        *shared_variable = input;
+        // Check the shared variable value and react accordingly
+        char input = *shared_variable;
+        if (input == '2') {
+            printf("I am Process 2\n");
+        } else if (input == 'x') {
+            printf("Process 2 received exit signal. Exiting Process 2.\n");
+            // Release the semaphore before exiting
+            if (semop(sem_id, &release, 1) == -1) {
+                perror("semop");
+                exit(EXIT_FAILURE);
+            }
+            // Send SIGTERM to itself
+            if (kill(getpid(), SIGTERM) == -1) {
+                perror("kill");
+                exit(EXIT_FAILURE);
+            }
+        }
 
         // Release the semaphore after accessing shared memory
         if (semop(sem_id, &release, 1) == -1) {
@@ -52,15 +62,8 @@ void process2(char *shared_variable) {
             exit(EXIT_FAILURE);
         }
 
-        if (input == '2') {
-            printf("I am Process 2\n");
-        } else if (input == 'x') {
-            // Send SIGTERM to itself
-            if (kill(getpid(), SIGTERM) == -1) {
-                perror("kill");
-                exit(EXIT_FAILURE);
-            }
-        }
+        // Introduce a small delay to avoid busy waiting
+        usleep(100000);  // 100 milliseconds
     }
 }
 
