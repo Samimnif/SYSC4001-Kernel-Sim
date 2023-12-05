@@ -33,7 +33,7 @@ int main() {
 
         // Send the result back to Process 1
         message.msg_type = 3;
-        msgsnd(msg_id, &message, sizeof(message), 0);
+        msgsnd(msg_id, &message, sizeof(message.data), 0);
     }
 
     return 0;
