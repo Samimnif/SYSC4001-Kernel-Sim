@@ -61,6 +61,10 @@ void atm_user()
         {
             continue;
         }
+        if (user_input.account_no[0] == 'X'){
+            printf("Thank you for using our services");
+            break;
+        }
         printf("Please Enter the PIN code for Account#%s\n", user_input.account_no);
         clearInputBuffer();
         fgets(user_input.account_pin, sizeof(user_input.account_pin), stdin);
@@ -85,6 +89,7 @@ void atm_user()
             continue;
         }
     }
+    msgctl(msgid, IPC_RMID, NULL);
 }
 
 int main()
