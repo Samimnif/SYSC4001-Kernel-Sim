@@ -4,6 +4,7 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 
+
 // Define the message structure
 struct msg_buffer {
     long msg_type;
@@ -11,8 +12,9 @@ struct msg_buffer {
 };
 
 int main() {
-    key_t key = ftok(".", 'M');
+    key_t key = ftok("main.c", 'M');
     int msg_id = msgget(key, IPC_CREAT | 0666);
+
     if (msg_id == -1) {
         perror("msgget");
         exit(EXIT_FAILURE);
@@ -23,7 +25,7 @@ int main() {
 
     while (1) {
         // Receive the message from Process 2
-        msgrcv(msg_id, &message, sizeof(message.data), 2, 0);
+        msgrcv(msg_id, &message, sizeof(message), 2, 0);
 
         // Process the message (add 1)
         message.data += 1;
@@ -31,10 +33,7 @@ int main() {
         // Display the result
         printf("Process 3 received: %d\n", message.data);
 
-        // Send the result back to Process 1
-        message.msg_type = 3;
-        msgsnd(msg_id, &message, sizeof(message.data), 0);
-    }
 
-    return 0;
+    }
 }
+
