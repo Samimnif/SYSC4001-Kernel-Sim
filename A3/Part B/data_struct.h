@@ -1,6 +1,8 @@
 #ifndef DATA_STRUCT_H
 #define DATA_STRUCT_H
 
+#define DB_FILE "database.csv"
+
 typedef enum action_type
 {
     PIN,

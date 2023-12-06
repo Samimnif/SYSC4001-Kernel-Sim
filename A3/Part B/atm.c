@@ -29,13 +29,13 @@ void atm_user()
     mesg message;
 
     // ftok to generate unique key
-    key = ftok("atm_key", 65);
+    key = ftok("atm_key", 'M');
     if (key == -1)
     {
         perror("ftok");
         exit(EXIT_FAILURE);
     }
-    printf("ATM: %d", key);
+    //printf("ATM: %d\n", key);
 
     // msgget creates a message queue
     // and returns identifier
@@ -69,17 +69,17 @@ void atm_user()
             continue;
         }
         message.account_d = user_input;
-        printf("Test: %s\n", message.account_d.account_no);
+        message.account_d.mesg_action = PIN;
         msgsnd(msgid, &message, sizeof(message), 0);
         msgrcv(msgid, &message, sizeof(message), 1, 0);
-        printf("message feedback\n");
+        printf("Message feedback\n");
         clearInputBuffer();
         if (message.account_d.mesg_action == OK)
         {
             printf("PIN OK\n");
             break;
         }
-        else
+        else if (message.account_d.mesg_action == PIN_WRONG)
         {
             printf("Wrong PIN\n");
             continue;

@@ -3,6 +3,7 @@
     "stdio.h": "c",
     "unistd.h": "c",
     "data_struct.h": "c",
-    "stdbool.h": "c"
+    "stdbool.h": "c",
+    "stdlib.h": "c"
   }
 }
