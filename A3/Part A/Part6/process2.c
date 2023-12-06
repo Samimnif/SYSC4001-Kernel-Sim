@@ -11,7 +11,7 @@ struct msg_buffer {
 };
 
 int main() {
-    key_t key = ftok(".", 'M');
+    key_t key = ftok("main.c", 'M');
     int msg_id = msgget(key, IPC_CREAT | 0666);
     if (msg_id == -1) {
         perror("msgget");
@@ -23,7 +23,7 @@ int main() {
 
     while (1) {
         // Receive the message from Process 1
-        msgrcv(msg_id, &message, sizeof(message.data), 1, 0);
+        msgrcv(msg_id, &message, sizeof(message), 1, 0);
 
         // Process the message (multiply by 2)
         message.data *= 2;
@@ -33,8 +33,7 @@ int main() {
 
         // Send the result to Process 3
         message.msg_type = 2;
-        msgsnd(msg_id, &message, sizeof(message.data), 0);
+        msgsnd(msg_id, &message, sizeof(message), 0);
     }
 
-    return 0;
 }
