@@ -13,46 +13,60 @@ struct msg_buffer {
 };
 
 int main() {
-    key_t key = ftok("msg_key.txt", 'M');
+    key_t key = ftok("main.c", 'M');
     int msg_id = msgget(key, IPC_CREAT | 0666);
+
     if (msg_id == -1) {
         perror("msgget");
         exit(EXIT_FAILURE);
     }
 
-    pid_t pid1, pid2;
+    // Process 2 forking
+    pid_t pid1 = fork();
 
     // Process 1 (Parent)
-    if ((pid1 = fork()) == 0) {
+    if (pid1 < 0) {
+        perror("Error forking process 2");
+        exit(EXIT_FAILURE);}
+
+    if (pid1 == 0) {
         execl("./process2", "process2", NULL);
-        perror("exec");
-        exit(EXIT_FAILURE);
-    } else {
-        // Process 1 (Parent)
-        struct msg_buffer message;
-        message.msg_type = 1;
+        exit(EXIT_FAILURE);}
 
-        for (int i = 1; i <= 5; ++i) {
-            // Display the current number
-            printf("Process 1 sending: %d\n", i);
+    // Process 2 forking    
+    pid_t pid2 = fork(); 
 
-            // Send the number to Process 2
-            message.data = i;
-            msgsnd(msg_id, &message, sizeof(message.data), 0);
+    if (pid2 < 0) {
+        perror("Error forking process 3");
+        exit(EXIT_FAILURE);}
 
-            // Receive the processed number from Process 3
-            msgrcv(msg_id, &message, sizeof(message.data), 3, 0);
+    if (pid2 == 0) {
+        execl("./process3", "process3", NULL);
+        exit(EXIT_FAILURE);}
 
-            // Display the final result
-            printf("Process 1 received: %d\n", message.data);
-        }
+    // Process 1 (Parent)
+    struct msg_buffer message;
+    message.msg_type = 1;
+    message.data = 1; 
 
+    for (int i = 1; i < 10 ; ++i) {
+        // Display the current number
+
+        printf("Process 1 sending: %d\n", message.data);
+
+        // Send the number to Process 2
+        msgsnd(msg_id, &message, sizeof(message), 0);
+        message.data+=1; 
         // Wait for child processes to finish
-        wait(NULL);
-
-        // Remove the message queue
-        msgctl(msg_id, IPC_RMID, NULL);
+        usleep(50000);
+    
     }
+    // kill child processes
+    kill(pid1, SIGTERM); 
+    kill(pid2, SIGTERM); 
+    // Remove the message queue
+    msgctl(msg_id, IPC_RMID, NULL);
+} 
+    
 
-    return 0;
-}
+
