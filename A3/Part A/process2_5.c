@@ -2,87 +2,64 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include <sys/sem.h>
 #include <signal.h>
+#include <semaphore.h>
+#include <string.h>
 
 #define SHM_SIZE sizeof(char)
 
-// Semaphore operations
-struct sembuf acquire = {0, -1, SEM_UNDO};
-struct sembuf release = {0, 1, SEM_UNDO};
+typedef struct {
+    char inputval[100];
+} memory;
 
-volatile sig_atomic_t child_exit_flag = 0;
-int sem_id;
-
-void handle_sigchld(int signum) {
-    // Signal handler for SIGCHLD (child process exit)
-    child_exit_flag = 1;
-}
-
-void process1(char *shared_variable, int shm_id) {
-    printf("I am Process 1\n");
-
-    pid_t pid = fork();
-
-    if (pid < 0) {
-        perror("fork");
-        exit(EXIT_FAILURE);
-    } else if (pid == 0) {
-        // Child process (Process 2)
-        execl("./process2", "process2", NULL);
-        perror("exec");
-        exit(EXIT_FAILURE);
-    } else {
-        // Parent process (Process 1)
-
-        // Install a signal handler for SIGCHLD
-        signal(SIGCHLD, handle_sigchld);
-
-        // Wait for the child process to finish (Process 2)
-        while (!child_exit_flag) {
-            // Process 1 waits for Process 2
-            printf("Process 1 waiting for Process 2...\n");
-            sleep(1);
-        }
-
-        // Cleanup shared memory and semaphore
-        shmdt(shared_variable);
-        shmctl(shm_id, IPC_RMID, NULL);
-        semctl(sem_id, 0, IPC_RMID);
-    }
-}
+sem_t *sem;
+int shm_id;
 
 int main() {
-    key_t key = ftok(".", 'S');
-    int shm_id = shmget(key, SHM_SIZE, IPC_CREAT | 0666);
+    key_t key = ftok("main_5.c", 'M');
+    shm_id = shmget(key, sizeof(memory), 0666);
     if (shm_id == -1) {
         perror("shmget");
         exit(EXIT_FAILURE);
     }
 
-    char *shared_variable = (char *)shmat(shm_id, NULL, 0);
-    if (shared_variable == (char *)-1) {
+    memory *shared_memory = (memory *)shmat(shm_id, NULL, 0);
+    if (shared_memory == (memory *)-1) {
         perror("shmat");
         exit(EXIT_FAILURE);
     }
 
-    // Create a semaphore
-    sem_id = semget(key, 1, IPC_CREAT | IPC_EXCL | 0666);
-    if (sem_id == -1) {
-        perror("semget");
-        exit(EXIT_FAILURE);
+    sem = (sem_t *)malloc(sizeof(sem_t));
+    sem_init(sem, 1, 1);
+
+    while (1) {
+        sem_wait(sem);
+
+        // Check the value of the shared variable
+        if (shared_memory->inputval[0] == '1') {
+            printf("Process 2: Received 1\n");
+        } else if (shared_memory->inputval[0] == '2') {
+            printf("Process 2: Received 2\n");
+        } else if (shared_memory->inputval[0] == 'x') {
+            printf("Process 2: Received x\n");
+            break;  // Exit the loop on 'x'
+        }
+
+        // Release the semaphore
+        sem_post(sem);
+
+        // Add some delay to avoid busy-waiting
+        sleep(1);
     }
 
-    // Initialize the semaphore
-    if (semctl(sem_id, 0, SETVAL, 1) == -1) {
-        perror("semctl");
-        exit(EXIT_FAILURE);
-    }
+    // Detach from shared memory
+    shmdt(shared_memory);
 
-    process1(shared_variable, shm_id);
+    // Cleanup semaphore
+    sem_destroy(sem);
+    free(sem);
 
     return 0;
 }
