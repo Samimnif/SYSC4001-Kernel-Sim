@@ -19,7 +19,8 @@
 void clearInputBuffer()
 {
     int c;
-    while ((c = getchar()) != '\n' && c != EOF);
+    while ((c = getchar()) != '\n' && c != EOF)
+        ;
 }
 
 void atm_user()
@@ -35,7 +36,7 @@ void atm_user()
         perror("ftok");
         exit(EXIT_FAILURE);
     }
-    //printf("ATM: %d\n", key);
+    // printf("ATM: %d\n", key);
 
     // msgget creates a message queue
     // and returns identifier
@@ -51,6 +52,8 @@ void atm_user()
     printf("WELCOME to the International ATM corporation\n");
     bool exit = false;
     account user_input;
+    char options[2];
+    float withdraw_ammount;
     user_input.mesg_action = PIN;
 
     while (true)
@@ -61,7 +64,8 @@ void atm_user()
         {
             continue;
         }
-        if (user_input.account_no[0] == 'X'){
+        if (user_input.account_no[0] == 'X')
+        {
             printf("Thank you for using our services");
             break;
         }
@@ -77,10 +81,43 @@ void atm_user()
         msgsnd(msgid, &message, sizeof(message), 0);
         msgrcv(msgid, &message, sizeof(message), 1, 0);
         printf("Message feedback\n");
-        clearInputBuffer();
+        //clearInputBuffer();
         if (message.account_d.mesg_action == OK)
         {
             printf("PIN OK\n");
+            while (1)
+            {
+                printf("Please Select one of the options: (1) Show Balance  (2) Withdraw Money\n");
+                clearInputBuffer();
+                fgets(options, sizeof(options), stdin);
+                if (atoi(options) == 1)
+                {
+                    printf("Balance Options\n");
+                    message.account_d.mesg_action = BALANCE;
+                    msgsnd(msgid, &message, sizeof(message), 0);
+                    msgrcv(msgid, &message, sizeof(message), 1, 0);
+                    printf("Bank Statement:\n----\nAccount#: %s\nBalance: $%.2f\n", message.account_d.account_no, message.account_d.funds);
+                    break;
+                }
+                else if ((atoi(options) == 2))
+                {
+                    printf("How much would you like to withdraw:\n");
+                    scanf("%f", &withdraw_ammount);
+                    message.account_d.mesg_action = WITHDRAW;
+                    message.account_d.withdraw_q = withdraw_ammount;
+                    msgsnd(msgid, &message, sizeof(message), 0);
+                    msgrcv(msgid, &message, sizeof(message), 1, 0);
+                    if (message.account_d.mesg_action == FUNDS_OK){
+                        printf("Withdrawal completed successfully!\nNew Balance: $%.2f\n", message.account_d.funds);
+                    }
+                    else if (message.account_d.mesg_action == NSF)
+                    {
+                        printf("Not Enough Funds in your balance.\nPlease Try Later.\n");
+                    }
+                    break;
+                }
+                printf("You didn't select any of the presented options.\nPlease Try Again.\n");
+            }
             break;
         }
         else if (message.account_d.mesg_action == PIN_WRONG)
@@ -103,13 +140,13 @@ int main()
     }
     else if (pid > 0)
     {
-        //parent
+        // parent
         atm_user();
     }
     else if (pid == 0)
     {
         printf("Child Started");
-        
+
         execl("./db_server", "db_server", NULL);
         perror("execlp");
         exit(EXIT_FAILURE);
