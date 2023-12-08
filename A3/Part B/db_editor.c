@@ -6,6 +6,9 @@
  * Mainly used for updating and adding new Accounts to the databse file.
  * Once it receives all the inputs required from the user, sends a message to the db_server.c
  * 
+ * **IMPORTANT INFO:** Once you finish one transaction in the atm, the atm process will end and exit. 
+ * This will cause unsyncing of the db_editor. So to resync the editor, restrat the db_editor afer you start the atm process again.
+ * 
  * We assume that whoever is using the db_editor.c is a trained professional.
  * Meaning they know that they have to:
  *   * Put exact 5 digits for the Account number. Anything more will not be accepted, and instead will take the frst 5 digits of the input.

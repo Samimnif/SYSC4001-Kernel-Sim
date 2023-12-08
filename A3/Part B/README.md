@@ -26,6 +26,8 @@ We assume that whoever is using the db_server.c, is going to consider the follwo
 * We included all the necessary comments and assumptions in this README and in the code file description (top of the file).
 
 ## Usage
+**IMPORTANT INFO:** Once you finish one transaction in the atm, the process will end and exit. This will cause unsyncing of the db_editor. So to resync, restrat the db_editor afer you start the atm process again.<br>
+
 Make sure you compile all threee files: atm.c, db_server.c and db_editor.c <br>
 You have to firstly open two terminal windows
 Then run the atm service in the first terminal.
