@@ -12,7 +12,8 @@ typedef enum action_type
     WITHDRAW,
     NSF,
     FUNDS_OK,
-    UPDATE_DB
+    UPDATE_DB,
+    IDLE
 } actions;
 
 typedef struct account_data
@@ -29,5 +30,12 @@ typedef struct mesg_buffer
     long mesg_type;
     account account_d;
 } mesg;
+
+typedef struct AccountInfo
+{
+    char account_no[6];
+    char account_pin[4];
+    float funds_amount;
+} info;
 
 #endif

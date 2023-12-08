@@ -13,13 +13,6 @@
 #include <sys/msg.h>
 #include <stdbool.h>
 
-typedef struct AccountInfo
-{
-    char account_no[6];
-    char account_pin[4];
-    float funds_amount;
-} info;
-
 void update_db(info new_data)
 {
     const char *filename = DB_FILE;
@@ -30,6 +23,7 @@ void update_db(info new_data)
     temp_fp = fopen(temp_filename, "w");
     fprintf(temp_fp, "Account,PIN,Funds\n");
 
+    bool updated = false;
     char lineString[100], tempString[100];
     fgets(lineString, sizeof(lineString), fp); // Read and ignore the header line
 
@@ -43,12 +37,17 @@ void update_db(info new_data)
         {
             // Update the line with new data
             fprintf(temp_fp, "%s,%s,%.2f\n", new_data.account_no, new_data.account_pin, new_data.funds_amount);
+            updated = true;
         }
         else
         {
             // Copy the existing line to the temporary file
             fprintf(temp_fp, "%s", tempString);
         }
+    }
+    if (!updated)
+    {
+        fprintf(temp_fp, "%s,%d,%.2f\n", new_data.account_no, atoi(new_data.account_pin) - 1, new_data.funds_amount);
     }
 
     fclose(fp);
@@ -62,7 +61,6 @@ void update_db(info new_data)
     }
 }
 
-
 bool check_pin(char *account, char *pin, info *user_data)
 {
     const char *filename = DB_FILE;
@@ -74,7 +72,7 @@ bool check_pin(char *account, char *pin, info *user_data)
     fgets(lineString, 100, fp);
     while (fgets(lineString, 100, fp))
     {
-        //printf("%s", lineString);
+        // printf("%s", lineString);
         strcpy(user_data->account_no, strtok(lineString, ","));
         strcpy(user_data->account_pin, strtok(NULL, ","));
         user_data->funds_amount = (float)atof(strtok(NULL, ","));
@@ -121,7 +119,7 @@ int main()
         exit(0);
     }
 
-    info user_data;
+    info user_data, temp;
     while (1)
     {
         // msgrcv to receive message
@@ -141,10 +139,12 @@ int main()
                 message.account_d.mesg_action = PIN_WRONG;
                 msgsnd(msgid, &message, sizeof(message), 0);
             }
-            continue;
+            break;
+
         case BALANCE:
             message.account_d.funds = user_data.funds_amount;
             msgsnd(msgid, &message, sizeof(message), 0);
+            break;
 
         case WITHDRAW:
             if (message.account_d.withdraw_q > user_data.funds_amount)
@@ -159,11 +159,17 @@ int main()
                 message.account_d.mesg_action = FUNDS_OK;
             }
             msgsnd(msgid, &message, sizeof(message), 0);
+            break;
 
         case UPDATE_DB:
-        /*
-        default:
-            printf("Went to default:\n");*/
+            printf("Mesage Update Received\n");
+            strcpy(temp.account_no, message.account_d.account_no);
+            strcpy(temp.account_pin, message.account_d.account_pin);
+            temp.funds_amount = message.account_d.funds;
+            update_db(temp);
+            message.account_d.mesg_action = IDLE;
+            break;
+
         }
     }
     // to destroy the message queue

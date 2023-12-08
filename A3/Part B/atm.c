@@ -58,29 +58,35 @@ void atm_user()
 
     while (true)
     {
-        printf("Please Enter your Account number (5 digit on the back of your card)\n");
-        fgets(user_input.account_no, sizeof(user_input.account_no), stdin);
-        if (strlen(user_input.account_no) > 6)
+        printf("Please Enter your Account number (5 digit on the back of your card) or 'X' to exit\n");
+        scanf("%s", user_input.account_no);
+        //fgets(user_input.account_no, sizeof(user_input.account_no), stdin);
+        if (strlen(user_input.account_no) > 5)
         {
+            printf("Account Number has to be 5 digits!!\n");
+            //clearInputBuffer();
             continue;
         }
         if (user_input.account_no[0] == 'X')
         {
-            printf("Thank you for using our services");
+            printf("\nThank you for using our services\n");
             break;
         }
         printf("Please Enter the PIN code for Account#%s\n", user_input.account_no);
-        clearInputBuffer();
-        fgets(user_input.account_pin, sizeof(user_input.account_pin), stdin);
-        if (strlen(user_input.account_pin) > 4)
+        //clearInputBuffer();
+        //fgets(user_input.account_pin, sizeof(user_input.account_pin), stdin);
+        scanf("%s", user_input.account_pin);
+        if (strlen(user_input.account_pin) > 3 || strlen(user_input.account_pin) < 3)
         {
+            //clearInputBuffer();
+            printf("PIN numbers are 3 digits!!\n");
             continue;
         }
         message.account_d = user_input;
         message.account_d.mesg_action = PIN;
         msgsnd(msgid, &message, sizeof(message), 0);
         msgrcv(msgid, &message, sizeof(message), 1, 0);
-        printf("Message feedback\n");
+
         //clearInputBuffer();
         if (message.account_d.mesg_action == OK)
         {
@@ -88,11 +94,11 @@ void atm_user()
             while (1)
             {
                 printf("Please Select one of the options: (1) Show Balance  (2) Withdraw Money\n");
-                clearInputBuffer();
-                fgets(options, sizeof(options), stdin);
+                //clearInputBuffer();
+                //fgets(options, sizeof(options), stdin);
+                scanf("%s", options);
                 if (atoi(options) == 1)
                 {
-                    printf("Balance Options\n");
                     message.account_d.mesg_action = BALANCE;
                     msgsnd(msgid, &message, sizeof(message), 0);
                     msgrcv(msgid, &message, sizeof(message), 1, 0);
