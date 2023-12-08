@@ -166,7 +166,8 @@ bool check_pin(char *account, char *pin, info *user_data)
     return false;
 }
 
-/** add_attempt:
+/** add_attempt: adds an attempt to an account. If the account is not in history, then it gets added.
+ * Otherwise, it increments the strikes.
  * Inputs: n (pointer to the node), head (pointer to the head of the linked list).
  * Output: pointer to the head of the linked list
  */
