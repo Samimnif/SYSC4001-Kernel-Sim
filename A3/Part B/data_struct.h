@@ -38,4 +38,11 @@ typedef struct AccountInfo
     float funds_amount;
 } info;
 
+typedef struct attempts_history
+{
+    char account_no[6];
+    int strikes;
+    struct attempts_history *next;
+} attempts;
+
 #endif

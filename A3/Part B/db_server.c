@@ -1,7 +1,13 @@
 /**
  * ASSIGNMENT 3
- * db_server.c
+ * @file db_server.c
+ *
  * Description:
+ * db_server will run as a child of atm.c
+ * Both will chare the message queues and will actively communicate with each other.
+ * db_server also communicates with db_editor to be able to edit the database file directly
+ * through db_server.
+ *
  * @author Sami Mnif - 101199669
  * @author Javeria Sohail - 101197163
  */
@@ -13,6 +19,13 @@
 #include <sys/msg.h>
 #include <stdbool.h>
 
+/** update_db: update databse csv file with new data/ exisiting data
+ * Depending on the account number, if it does exists, it will override it.
+ * Else it will append the new account + its information to the bottom of teh file.
+ *
+ * Input: new_data (info object with account info)
+ * Output: void
+ */
 void update_db(info new_data)
 {
     const char *filename = DB_FILE;
@@ -61,6 +74,65 @@ void update_db(info new_data)
     }
 }
 
+/** update_db: update databse csv file with new data/ exisiting data
+ * Depending on the account number, if it does exists, it will override it.
+ * Else it will append the new account + its information to the bottom of teh file.
+ *
+ * Input: new_data (info object with account info)
+ * Output: void
+ */
+void block_account(char *account)
+{
+    const char *filename = DB_FILE;
+    const char *temp_filename = "temp_db_file.txt";
+
+    FILE *fp, *temp_fp;
+    fp = fopen(filename, "r");
+    temp_fp = fopen(temp_filename, "w");
+    fprintf(temp_fp, "Account,PIN,Funds\n");
+
+    char lineString[100], tempString[100];
+    fgets(lineString, sizeof(lineString), fp); // Read and ignore the header line
+
+    while (fgets(lineString, sizeof(lineString), fp))
+    {
+        strcpy(tempString, lineString);
+        // Tokenize the line
+        char *account_no_str = strtok(lineString, ",");
+        int account_no = atoi(account_no_str);
+        char pin[4];
+        strcpy(pin, strtok(NULL, ","));
+        float funds = (float)atof(strtok(NULL, ","));
+
+        if (account_no == atoi(account))
+        {
+            account_no_str[0] = 'X';
+            // Update the line with new data
+            fprintf(temp_fp, "%s,%s,%.2f\n", account_no_str, pin, funds);
+        }
+        else
+        {
+            // Copy the existing line to the temporary file
+            fprintf(temp_fp, "%s", tempString);
+        }
+    }
+
+    fclose(fp);
+    fclose(temp_fp);
+
+    // Rename the temporary file to the original file
+    if (rename(temp_filename, filename) != 0)
+    {
+        perror("Error renaming file");
+        exit(EXIT_FAILURE);
+    }
+}
+
+/** check_pin: goes through the csv file database and checks
+ * if the pin provided matches the PIN on the file.
+ * Inputs: account number (char), pin number (char), full user data (info object)
+ * Output: bool (true if it matches, false otherwise)
+ */
 bool check_pin(char *account, char *pin, info *user_data)
 {
     const char *filename = DB_FILE;
@@ -94,6 +166,48 @@ bool check_pin(char *account, char *pin, info *user_data)
     return false;
 }
 
+/** add_attempt:
+ * Inputs: n (pointer to the node), head (pointer to the head of the linked list).
+ * Output: pointer to the head of the linked list
+ */
+attempts *add_attempt(char *account, attempts *head)
+{
+    if (head == NULL)
+    {
+        attempts *new_attempt = (attempts *)malloc(sizeof(attempts));
+        strcpy(new_attempt->account_no, account);
+        new_attempt->strikes = 1;
+        new_attempt->next = NULL;
+        head = new_attempt;
+    }
+    else
+    {
+        attempts *current = head, *temp = head;
+        while (current != NULL)
+        {
+            //printf("History: Account#%s, Strikes:%d\n", current->account_no, current->strikes);
+            if (atoi(current->account_no) == atoi(account))
+            {
+                current->strikes++;
+                if (current->strikes >= 3)
+                {
+                    block_account(current->account_no);
+                    printf("Account#%s is Blocked\n", current->account_no);
+                }
+                return head;
+            }
+            temp = current;
+            current = current->next;
+        }
+        attempts *new_attempt = (attempts *)malloc(sizeof(attempts));
+        strcpy(new_attempt->account_no, account);
+        new_attempt->strikes = 1;
+        new_attempt->next = NULL;
+        temp->next = new_attempt;
+    }
+    return head;
+}
+
 int main()
 {
     key_t key;
@@ -108,7 +222,6 @@ int main()
         perror("ftok");
         exit(0);
     }
-    // printf("DB: %d\n", key);
 
     // msgget creates a message queue
     // and returns identifier
@@ -119,6 +232,7 @@ int main()
         exit(0);
     }
 
+    attempts *history = NULL;
     info user_data, temp;
     while (1)
     {
@@ -136,6 +250,8 @@ int main()
             }
             else
             {
+                history = add_attempt(message.account_d.account_no, history);
+                //printf("Updated history: %p\n", (void *)history);
                 message.account_d.mesg_action = PIN_WRONG;
                 msgsnd(msgid, &message, sizeof(message), 0);
             }
@@ -169,7 +285,6 @@ int main()
             update_db(temp);
             message.account_d.mesg_action = IDLE;
             break;
-
         }
     }
     // to destroy the message queue
