@@ -4,7 +4,7 @@
  *
  * Description:
  * db_server will run as a child of atm.c
- * Both will chare the message queues and will actively communicate with each other.
+ * Both will share the message queues and will actively communicate with each other.
  * db_server also communicates with db_editor to be able to edit the database file directly
  * through db_server.
  *
@@ -21,7 +21,7 @@
 
 /** update_db: update databse csv file with new data/ exisiting data
  * Depending on the account number, if it does exists, it will override it.
- * Else it will append the new account + its information to the bottom of teh file.
+ * Else it will append the new account + its information to the bottom of the file.
  *
  * Input: new_data (info object with account info)
  * Output: void
@@ -74,11 +74,11 @@ void update_db(info new_data)
     }
 }
 
-/** update_db: update databse csv file with new data/ exisiting data
- * Depending on the account number, if it does exists, it will override it.
- * Else it will append the new account + its information to the bottom of teh file.
+/** block_account: update databse csv file and blocks the specific account number
+ * by changing the first digit of the account number by an X
+ * Example:  X0117, 260, 1000.23
  *
- * Input: new_data (info object with account info)
+ * Input: account (char for account number)
  * Output: void
  */
 void block_account(char *account)
@@ -130,6 +130,7 @@ void block_account(char *account)
 
 /** check_pin: goes through the csv file database and checks
  * if the pin provided matches the PIN on the file.
+ * If correct, the user data will be saved in the user_data info object.
  * Inputs: account number (char), pin number (char), full user data (info object)
  * Output: bool (true if it matches, false otherwise)
  */
@@ -279,7 +280,7 @@ int main()
             break;
 
         case UPDATE_DB:
-            printf("Mesage Update Received\n");
+            //printf("Mesage Update Received\n");
             strcpy(temp.account_no, message.account_d.account_no);
             strcpy(temp.account_pin, message.account_d.account_pin);
             temp.funds_amount = message.account_d.funds;

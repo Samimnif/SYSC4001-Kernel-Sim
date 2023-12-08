@@ -1,7 +1,11 @@
 /**
  * ASSIGNMENT 3
- * atm.c
+ * @file atm.c
+ * 
  * Description:
+ * main atm service where it interacts with the user and the db_server.c
+ * Receives inputs from usr and sends messages to db_server.c using message queues.
+ * 
  * @author Sami Mnif - 101199669
  * @author Javeria Sohail - 101197163
  */
@@ -16,6 +20,9 @@
 
 #include "data_struct.h"
 
+/** clearInputBuffer: clears input buffer
+ * 
+*/
 void clearInputBuffer()
 {
     int c;
@@ -23,6 +30,11 @@ void clearInputBuffer()
         ;
 }
 
+/** atm_user: the main atm code where it creates message queues and send messages nad receive with the db_server.c
+ * Inputs: void
+ * Outputs: void
+ * 
+*/
 void atm_user()
 {
     key_t key;
@@ -36,7 +48,6 @@ void atm_user()
         perror("ftok");
         exit(EXIT_FAILURE);
     }
-    // printf("ATM: %d\n", key);
 
     // msgget creates a message queue
     // and returns identifier
@@ -60,13 +71,15 @@ void atm_user()
     {
         printf("Please Enter your Account number (5 digit on the back of your card) or 'X' to exit\n");
         scanf("%s", user_input.account_no);
-        //fgets(user_input.account_no, sizeof(user_input.account_no), stdin);
+        
+        // Checks for the number of digits in the account_no
         if (strlen(user_input.account_no) > 5)
         {
             printf("Account Number has to be 5 digits!!\n");
             //clearInputBuffer();
             continue;
         }
+        // Checks if the user wants to exit
         if (user_input.account_no[0] == 'X')
         {
             printf("\nThank you for using our services\n");
@@ -74,8 +87,8 @@ void atm_user()
         }
         printf("Please Enter the PIN code for Account#%s\n", user_input.account_no);
         //clearInputBuffer();
-        //fgets(user_input.account_pin, sizeof(user_input.account_pin), stdin);
         scanf("%s", user_input.account_pin);
+        // Checks for number of digits in the PIN
         if (strlen(user_input.account_pin) > 3 || strlen(user_input.account_pin) < 3)
         {
             //clearInputBuffer();
@@ -84,13 +97,15 @@ void atm_user()
         }
         message.account_d = user_input;
         message.account_d.mesg_action = PIN;
+        //sends data to db_server.c
         msgsnd(msgid, &message, sizeof(message), 0);
         msgrcv(msgid, &message, sizeof(message), 1, 0);
 
-        //clearInputBuffer();
+        //Once data received, then checks the message action variable
         if (message.account_d.mesg_action == OK)
         {
             printf("PIN OK\n");
+            //if the PIN ok then ask for options
             while (1)
             {
                 printf("Please Select one of the options: (1) Show Balance  (2) Withdraw Money\n");
@@ -128,6 +143,7 @@ void atm_user()
         }
         else if (message.account_d.mesg_action == PIN_WRONG)
         {
+            // If the PIN is wrong, then Try again
             printf("Wrong PIN\n");
             continue;
         }
@@ -146,11 +162,12 @@ int main()
     }
     else if (pid > 0)
     {
-        // parent
+        // parent atm
         atm_user();
     }
     else if (pid == 0)
     {
+        // child db_sever.c
         printf("Child Started");
 
         execl("./db_server", "db_server", NULL);

@@ -1,7 +1,17 @@
 /**
  * ASSIGNMENT 3
- * db_editor.c
+ * @file db_editor.c
  * Description:
+ * db_editor runs seperatly in a second terminal window.
+ * Mainly used for updating and adding new Accounts to the databse file.
+ * Once it receives all the inputs required from the user, sends a message to the db_server.c
+ * 
+ * We assume that whoever is using the db_editor.c is a trained professional.
+ * Meaning they know that they have to:
+ *   * Put exact 5 digits for the Account number. Anything more will not be accepted, and instead will take the frst 5 digits of the input.
+ *   * Put 3 digits for account PIN. Anything more will not be accepted, and instead will take the frst 3 digits of the input.
+ *   * Put any integer/float in he funds section.
+ * 
  * @author Sami Mnif - 101199669
  * @author Javeria Sohail - 101197163
  */
